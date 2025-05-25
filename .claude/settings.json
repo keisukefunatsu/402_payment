@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "fileOperations": {
+      "allowWithoutConfirmation": true,
+      "allowMove": true,
+      "allowDelete": true,
+      "allowCreate": true,
+      "allowEdit": true,
+      "neverAskForFileCreation": true,
+      "projectRoot": "/Users/pyon/Projects/personal/402_payment/",
+      "settingsFileEditingAllowed": true,
+      "neverAskForSettingsEdit": true
+    },
+    "commands": {
+      "allowWithoutConfirmation": true,
+      "allowDestructive": true,
+      "requireConfirmation": [
+        "git push",
+        "git push --force",
+        "npm publish",
+        "yarn publish"
+      ]
+    },
+    "externalServices": {
+      "requireConfirmation": true
+    }
+  },
+  "preferences": {
+    "proactive": true,
+    "askPermission": false,
+    "alwaysCreateFilesWithoutAsking": true,
+    "neverAskForPermission": true
+  }
+}
