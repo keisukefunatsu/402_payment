@@ -1,3 +1,30 @@
+# CLAUDE.md
+
+## Project Permissions (Permanent - All Sessions)
+
+- `mv` (move) commands are allowed
+- `rm -rf` commands are allowed
+- Execute commands without asking for permission
+- Make necessary changes proactively
+- All file operations (create, edit, delete, move) are allowed without permission
+- File creation is allowed without asking for permission
+- Editing settings.json is allowed without permission - NEVER ASK
+- These permissions apply to ALL future sessions permanently
+
+## Restrictions (Always Ask Permission)
+
+- `git push` and any remote repository operations
+- Writing to external services (APIs, databases, etc.)
+- File operations outside of `/Users/pyon/Projects/personal/402_payment/`
+- Any operation that affects systems outside this project
+
+## Project Structure
+
+- `/application/` - Next.js application code
+- `/web3/` - Smart contracts and blockchain-related code
+
+---
+
 # X402 Payment App - Project Status
 
 ## プロジェクト概要
@@ -10,27 +37,38 @@ HTTP 402 Payment Requiredとアカウントアブストラクション（ERC-433
 4. ✅ UIコンポーネント（AccountManager、ResourceList）の作成
 5. ✅ モックアカウントアブストラクションロジックの追加
 
-## プロジェクト構造
+## 現在のプロジェクト構造
 ```
-/402_payment/
-├── app/
-│   ├── api/
-│   │   ├── account/create/route.ts  # アカウント作成API
-│   │   ├── resource/[id]/route.ts   # 402レスポンスを返すAPI
-│   │   └── payment/execute/route.ts # 支払い実行API
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx                     # メインページ
-├── components/
-│   ├── AccountManager.tsx           # アカウント管理UI
-│   └── ResourceList.tsx             # リソース一覧と支払いUI
-├── lib/
-│   ├── types.ts                     # TypeScript型定義
-│   └── mockAccountAbstraction.ts    # AA実装
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-└── README.md
+402_payment/
+├── application/          # Next.js frontend application
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── account/create/route.ts  # アカウント作成API
+│   │   │   ├── resource/[id]/route.ts   # 402レスポンスを返すAPI
+│   │   │   └── payment/execute/route.ts # 支払い実行API
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx                     # メインページ
+│   ├── components/
+│   │   ├── AccountManager.tsx           # アカウント管理UI
+│   │   └── ResourceList.tsx             # リソース一覧と支払いUI
+│   ├── lib/
+│   │   ├── types.ts                     # TypeScript型定義
+│   │   └── mockAccountAbstraction.ts    # AA実装
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── tailwind.config.ts
+│   └── next.config.js
+├── web3/                 # Smart contracts and blockchain code (to be implemented)
+├── .ai/                  # AI-related documentation and project management
+│   ├── CLAUDE.md         # This file - consolidated project documentation
+│   ├── PROJECT_DESIGN.md
+│   ├── DESIGN.md
+│   ├── DEPLOYMENT_GUIDE.md
+│   ├── COMMANDS_HISTORY.md
+│   └── architecture/
+│       └── overview.md
+└── README.md             # Public project documentation
 ```
 
 ## 主要な機能
@@ -41,6 +79,7 @@ HTTP 402 Payment Requiredとアカウントアブストラクション（ERC-433
 
 ## 実行方法
 ```bash
+cd application
 npm install
 npm run dev
 # http://localhost:3000 を開く
