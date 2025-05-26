@@ -101,6 +101,31 @@ The following commands are NOT allowed for security reasons:
 - `npm install -g` (global installations)
 - `apt`, `yum`, `brew` (system package managers)
 
+## File Editing Permissions
+
+### Automatic File Editing (No Permission Required)
+Claude can directly edit the following types of files without asking for permission:
+- Source code files (`.js`, `.ts`, `.tsx`, `.jsx`)
+- Style files (`.css`, `.scss`, `.less`)
+- Component files in `application/app/`, `application/components/`, `application/lib/`
+- Test files (`*.test.*`, `*.spec.*`)
+- Documentation files (`*.md`) except configuration docs
+- HTML templates and markup files
+
+### Restricted Files (Permission Required)
+For the following high-impact files, Claude should ask for explicit permission before editing:
+- **Configuration files**: `package.json`, `tsconfig.json`, `next.config.js`, `tailwind.config.ts`, `postcss.config.js`
+- **Environment files**: `.env*`, `.env.local`, `.env.production`
+- **Firebase configuration**: `firebase.json`, `firestore.rules`
+- **Deployment files**: `Dockerfile`, `docker-compose.yml`, `.github/workflows/*`
+- **Root-level configuration**: `.gitignore`, `.eslintrc*`, `prettier.config.*`
+- **Claude configuration**: `CLAUDE.md` (this file)
+
+### File Creation Guidelines
+- Always prefer editing existing files over creating new ones
+- For new component files, follow existing naming conventions
+- Create test files alongside new features when applicable
+
 ## Development Guidelines
 
 ### Code Style
