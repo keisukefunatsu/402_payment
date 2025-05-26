@@ -1,0 +1,10 @@
+{
+  "network": "hardhat",
+  "contracts": {
+    "PaymentManager": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "AccountFactory": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "SampleAccount": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "EntryPoint": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789"
+  },
+  "timestamp": "2025-05-26T18:04:24.333Z"
+}
