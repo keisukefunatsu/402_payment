@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "FIRESTORE_EMULATOR_HOST=localhost:8080 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "emulator": "firebase emulators:start --only firestore --project demo-project",
+    "emulator:ui": "firebase emulators:start --project demo-project"
   },
   "dependencies": {
+    "firebase-admin": "^13.4.0",
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18"
