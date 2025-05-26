@@ -395,24 +395,13 @@ sequenceDiagram
 
 ### 最小構成のコレクション設計
 
-```typescript
-// users/{userId} - ユーザー基本情報
-{
-  aaWalletAddress: string;      // AAウォレットアドレス
-}
-
-// contents/{contentId} - コンテンツ
-{
-  preview: string;              // 無料プレビュー
-  content: string;              // 有料本文
-  price: number;                // 価格
-}
-
-// contents/{contentId}/accessList/{userId} - アクセス権
-{
-  // ドキュメントの存在 = アクセス権あり
-}
-```
+| コレクション | ドキュメントID | フィールド | 説明 |
+|---|---|---|---|
+| **users** | {userId} | aaWalletAddress | AAウォレットアドレス |
+| **contents** | {contentId} | preview | 無料プレビュー |
+| | | content | 有料本文 |
+| | | price | 価格（Wei単位） |
+| **accessList** | {userId} | - | 存在確認のみ |
 
 ### インデックス設計
 
@@ -459,18 +448,11 @@ sequenceDiagram
    - シャーディングカウンタパターンで高頻度更新に対応
 
 4. **セキュリティルール**
-   ```javascript
-   // Firestore Security Rules例
-   match /contents/{contentId} {
-     allow read: if request.auth != null;
-     allow write: if request.auth.uid == resource.data.creatorId;
-   }
    
-   match /contents/{contentId}/accessList/{userId} {
-     allow read: if request.auth.uid == userId;
-     allow write: if false; // サーバー側からのみ書き込み
-   }
-   ```
+   **Firestore Security Rulesの設定**
+   - contents: 認証ユーザーは読み取り可
+   - accessList: 本人のみ読み取り可
+   - 書き込みはサーバー側からのみ
 
 ## AA Infrastructure Services
 
@@ -540,17 +522,14 @@ flowchart LR
 
 ### 環境変数設定
 
-```env
-# Pimlico
-PIMLICO_API_KEY=your-api-key
-PIMLICO_BUNDLER_URL=https://api.pimlico.io/v2/base-sepolia/rpc
-PIMLICO_PAYMASTER_URL=https://api.pimlico.io/v2/base-sepolia/rpc
-
-# Contracts (Base Sepolia)
-ACCOUNT_FACTORY_ADDRESS=0x...
-PAYMASTER_ADDRESS=0x...
-ENTRY_POINT_ADDRESS=0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789
-```
+| 環境変数 | 値 | 説明 |
+|---|---|---|
+| PIMLICO_API_KEY | (取得必要) | Pimlico APIキー |
+| PIMLICO_BUNDLER_URL | https://api.pimlico.io/v2/base-sepolia/rpc | Bundlerエンドポイント |
+| PIMLICO_PAYMASTER_URL | https://api.pimlico.io/v2/base-sepolia/rpc | Paymasterエンドポイント |
+| ACCOUNT_FACTORY_ADDRESS | (ネットワークごと) | Safe Factoryアドレス |
+| PAYMASTER_ADDRESS | (ネットワークごと) | Paymasterアドレス |
+| ENTRY_POINT_ADDRESS | 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789 | ERC-4337 EntryPoint |
 
 ## 外部サービス依存関係
 
@@ -666,18 +645,10 @@ flowchart TD
 
 ### 将来的な拡張時の検討
 
-```typescript
-// もしコンテンツ管理をオンチェーンにする場合
-contract MinimalContentRegistry {
-    mapping(bytes32 => uint256) public contentPrices;
-    mapping(bytes32 => mapping(address => bool)) public hasAccess;
-    
-    function purchaseContent(bytes32 contentId) external payable {
-        require(msg.value >= contentPrices[contentId], "Insufficient payment");
-        hasAccess[contentId][msg.sender] = true;
-    }
-}
-```
+オンチェーンコンテンツ管理が必要になった場合：
+- コンテンツ価格のマッピング
+- アクセス権のオンチェーン管理
+- 購入関数の実装
 
 ### 推奨アプローチ
 
@@ -691,38 +662,46 @@ contract MinimalContentRegistry {
    - 分散型を強調したい場合
    - トークンゲートが必要な場合
 
+## Coinbase x402 ライブラリの検討
+
+### x402 vs 独自実装
+
+| 項目 | Coinbase x402 | 独自実装（AA） |
+|---|---|---|
+| **決済方法** | ステーブルコイン（USDC等） | ETH |
+| **ガス代** | ユーザー負担 | Paymaster負担（ガスレス） |
+| **ウォレット** | 既存ウォレット必要 | AAウォレット自動生成 |
+| **実装の簡単さ** | 1行で実装可能 | カスタム実装必要 |
+| **最小決済額** | $0.001 | 制限なし |
+| **決済時間** | 2秒 | 5-10秒 |
+
+### 結論：独自実装を選択
+
+**理由：**
+1. **ウォレット不要** - x402は既存ウォレット必要、我々はウォレット不要を目指す
+2. **完全ガスレス** - x402はガス代ユーザー負担、我々はPaymaster使用
+3. **ETH決済** - 日本ユーザーにはETHの方が馴染みあり
+4. **カスタマイズ性** - AA統合により柔軟な実装可能
+
+ただし、x402の設計思想（HTTPヘッダー利用等）は参考にする。
+
 ## API設計
 
 ### 402 Payment Required レスポンス仕様
 
-```typescript
-// GET /api/content/{contentId}
-// 未購入時のレスポンス
-{
-  status: 402,
-  headers: {
-    'X-Payment-Required': 'true',
-    'X-Payment-Amount': '0.001',  // ETH
-    'X-Payment-Currency': 'ETH',
-    'X-Payment-Network': 'base-sepolia',
-    'X-Content-Id': 'content123'
-  },
-  body: {
-    preview: "これはコンテンツのプレビューです...",
-    price: 1000000000000000,  // Wei
-    contentId: "content123"
-  }
-}
+#### 未購入時（402）
+- ステータスコード: 402
+- ヘッダー:
+  - X-Payment-Required: true
+  - X-Payment-Amount: 支払い額（ETH）
+  - X-Payment-Currency: ETH
+  - X-Payment-Network: base-sepolia
+  - X-Content-Id: コンテンツID
+- ボディ: プレビュー、価格、コンテンツID
 
-// 購入済みの場合
-{
-  status: 200,
-  body: {
-    content: "これは有料コンテンツの本文です...",
-    contentId: "content123"
-  }
-}
-```
+#### 購入済み（200）
+- ステータスコード: 200
+- ボディ: 完全なコンテンツ、コンテンツID
 
 ### 主要エンドポイント
 
@@ -757,82 +736,36 @@ flowchart LR
 
 ### データフロー
 
-```typescript
-// 1. 初回アクセス時
-const session = {
-  sessionId: generateId(),
-  userId: generateId(),
-  createdAt: new Date()
-};
+1. **初回アクセス時**
+   - セッションID生成
+   - ユーザーID生成
+   - AAウォレット生成（バックグラウンド）
+   - Firestore保存
 
-// 2. AAウォレット生成（バックグラウンド）
-const wallet = await createAAWallet(session.userId);
-
-// 3. Firestore保存
-await db.collection('users').doc(session.userId).set({
-  aaWalletAddress: wallet.address
-});
-
-// 4. コンテンツアクセス時
-const hasAccess = await db
-  .collection('contents')
-  .doc(contentId)
-  .collection('accessList')
-  .doc(userId)
-  .get();
-
-if (!hasAccess.exists) {
-  // 402レスポンス
-  return new Response(preview, { status: 402 });
-}
-```
+2. **コンテンツアクセス時**
+   - accessList確認
+   - 未購入→402レスポンス
+   - 購入済→200レスポンス
 
 ## 決済フロー詳細
 
 ### UserOperation構築
 
-```typescript
-// 支払い用UserOperation作成
-async function createPaymentUserOp(
-  userId: string,
-  contentId: string,
-  price: bigint
-) {
-  const user = await getUser(userId);
-  const wallet = user.aaWalletAddress;
-  
-  // 1. callDataの作成（単純なETH送金）
-  const callData = encodeFunctionData({
-    abi: walletAbi,
-    functionName: 'execute',
-    args: [
-      CREATOR_ADDRESS,  // 送金先
-      price,           // 金額
-      '0x'            // データなし
-    ]
-  });
-  
-  // 2. UserOperation構築
-  const userOp = {
-    sender: wallet,
-    nonce: await getNonce(wallet),
-    initCode: '0x',  // デプロイ済み
-    callData,
-    callGasLimit: 100000n,
-    verificationGasLimit: 200000n,
-    preVerificationGas: 50000n,
-    maxFeePerGas: await getGasPrice(),
-    maxPriorityFeePerGas: 2000000000n,
-    paymasterAndData: await getPaymasterData(),
-    signature: '0x'  // 後で追加
-  };
-  
-  // 3. 署名（サーバー側で管理）
-  userOp.signature = await signUserOp(userOp, userId);
-  
-  return userOp;
-}
-```
+#### UserOperationパラメータ
+
+| パラメータ | 値/説明 |
+|---|---|
+| sender | AAウォレットアドレス |
+| nonce | ウォレットの現在のnonce |
+| initCode | 0x（デプロイ済みの場合） |
+| callData | execute関数のエンコードデータ |
+| callGasLimit | 100000 |
+| verificationGasLimit | 200000 |
+| preVerificationGas | 50000 |
+| maxFeePerGas | 動的に取得 |
+| maxPriorityFeePerGas | 2 Gwei |
+| paymasterAndData | Pimlicoから取得 |
+| signature | サーバー側で生成 |
 
 ## State Machine Diagrams
 
@@ -903,5 +836,50 @@ stateDiagram-v2
         Hidden from public
         but data retained
     end note
+```
+
+## 実装タスク一覧
+
+### 1. 環境セットアップ
+- [ ] Pimlicoアカウント作成・APIキー取得
+- [ ] Firebase プロジェクト作成
+- [ ] Vercel プロジェクト作成
+- [ ] 環境変数設定
+
+### 2. Backend実装
+- [ ] Next.js APIルート作成
+  - [ ] `/api/content` - 一覧・作成
+  - [ ] `/api/content/[id]` - 402対応
+  - [ ] `/api/payment/process` - 決済処理
+  - [ ] `/api/user/wallet` - ウォレット情報
+- [ ] Firestore接続設定
+- [ ] セッション管理実装
+
+### 3. AA Integration
+- [ ] permissionless.js セットアップ
+- [ ] AAウォレット生成ロジック
+- [ ] UserOperation作成・署名
+- [ ] Pimlico Bundler接続
+
+### 4. Frontend実装
+- [ ] コンテンツ一覧画面
+- [ ] 402エラーハンドリング
+- [ ] 支払いUI（自動実行）
+- [ ] 購入済みコンテンツ表示
+
+### 5. 動作確認
+- [ ] Base Sepoliaでのテスト
+- [ ] ガスレス決済の確認
+- [ ] セッション永続性の確認
+
+### 実装の優先順位
+
+```mermaid
+graph TD
+    A[1. 環境セットアップ] --> B[2. セッション管理]
+    B --> C[3. AAウォレット生成]
+    C --> D[4. 402 APIエンドポイント]
+    D --> E[5. 決済フロー実装]
+    E --> F[6. UI実装]
 ```
 
