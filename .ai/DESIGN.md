@@ -472,6 +472,368 @@ sequenceDiagram
    }
    ```
 
+## AA Infrastructure Services
+
+### 使用するサービス選定
+
+#### 1. Bundler Service
+**選択: Pimlico**
+- API: `https://api.pimlico.io/v2/base-sepolia/rpc`
+- 理由:
+  - 安定性が高い
+  - ドキュメントが充実
+  - 無料枠あり（テスト用）
+  - TypeScript SDKあり
+
+#### 2. Paymaster Service
+**選択: Pimlico Paymaster**
+- VerifyingPaymaster契約を使用
+- スポンサーシップポリシー設定可能
+- 理由:
+  - Bundlerと同じプロバイダーで統合が簡単
+  - 柔軟なガス代スポンサー設定
+
+#### 3. Account Factory
+**選択: Safe (Gnosis) Account Factory**
+- 実績のあるスマートウォレット実装
+- ERC-4337完全準拠
+- 監査済みコード
+
+### 実装フロー
+
+```mermaid
+flowchart LR
+    subgraph "Client"
+        A[ユーザーアクセス]
+        B[セッションID生成]
+    end
+    
+    subgraph "Backend"
+        C[AAアドレス計算]
+        D[UserOp作成]
+    end
+    
+    subgraph "Pimlico"
+        E[Bundler API]
+        F[Paymaster API]
+    end
+    
+    subgraph "Blockchain"
+        G[Account Factory]
+        H[AA Wallet]
+    end
+    
+    A --> B --> C
+    C --> D --> E
+    E --> F
+    F --> G
+    G --> H
+```
+
+### SDK/ライブラリ選定
+
+| 用途 | ライブラリ | 理由 |
+|---|---|---|
+| AA操作 | permissionless.js | Pimlico推奨、TypeScript対応 |
+| Ethereum接続 | viem | 軽量、TypeScript完全対応 |
+| ウォレット管理 | @safe-global/safe-core-sdk | Safe wallet操作 |
+
+### 環境変数設定
+
+```env
+# Pimlico
+PIMLICO_API_KEY=your-api-key
+PIMLICO_BUNDLER_URL=https://api.pimlico.io/v2/base-sepolia/rpc
+PIMLICO_PAYMASTER_URL=https://api.pimlico.io/v2/base-sepolia/rpc
+
+# Contracts (Base Sepolia)
+ACCOUNT_FACTORY_ADDRESS=0x...
+PAYMASTER_ADDRESS=0x...
+ENTRY_POINT_ADDRESS=0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789
+```
+
+## 外部サービス依存関係
+
+### 依存サービス一覧
+
+| サービス種別 | プロバイダー | 用途 | 代替可能性 | 停止時の影響 |
+|---|---|---|---|---|
+| **Bundler** | Pimlico | UserOperation送信・実行 | 高（Stackup, Alchemy等） | 新規決済不可 |
+| **Paymaster** | Pimlico | ガス代スポンサー | 高（自前Paymaster可） | ユーザーがガス代負担必要 |
+| **RPC Node** | Alchemy/Infura | ブロックチェーン接続 | 高（複数プロバイダー） | 全機能停止 |
+| **Database** | Firestore | ユーザー・コンテンツ管理 | 中（他NoSQL可） | アプリ停止 |
+| **Hosting** | Vercel | フロントエンド配信 | 高（Netlify等） | UI表示不可 |
+
+### 自前実装 vs 外部依存
+
+| 機能 | 自前実装 | 外部サービス | 選択理由 |
+|---|---|---|---|
+| **AAウォレット生成** | Smart Contract作成必要 | Safe Factory利用 | 監査済み・実績あり |
+| **UserOp実行** | Bundler開発必要 | Pimlico Bundler | 開発コスト大 |
+| **ガス代スポンサー** | Paymaster契約必要 | Pimlico Paymaster | 運用が複雑 |
+| **署名管理** | 自前実装 ✓ | - | セキュリティ上重要 |
+| **セッション管理** | 自前実装 ✓ | - | アプリ固有ロジック |
+
+### サービス停止時の対策
+
+```mermaid
+flowchart TD
+    subgraph "Primary Services"
+        P1[Pimlico Bundler]
+        P2[Pimlico Paymaster]
+        P3[Alchemy RPC]
+    end
+    
+    subgraph "Fallback Services"
+        F1[Stackup Bundler]
+        F2[自前Paymaster]
+        F3[Infura RPC]
+    end
+    
+    subgraph "Monitoring"
+        M[Health Check]
+    end
+    
+    M --> P1
+    M --> P2
+    M --> P3
+    
+    P1 -.失敗時.-> F1
+    P2 -.失敗時.-> F2
+    P3 -.失敗時.-> F3
+```
+
+### コスト構造
+
+| サービス | 料金体系 | 想定月額 | 備考 |
+|---|---|---|---|
+| Pimlico | 従量課金 | $0-100 | 初期は無料枠内 |
+| Firestore | 読み書き回数 | $0-50 | 少量なら無料枠内 |
+| Vercel | 帯域・ビルド時間 | $0-20 | Hobbyプラン |
+| Alchemy | API呼び出し数 | $0 | 無料枠300M CU/月 |
+
+## スマートコントラクト開発の必要性
+
+### 結論：最小限のコントラクトで実現可能
+
+| コントラクト | 必要性 | 理由 |
+|---|---|---|
+| **Account Factory** | ❌ 不要 | Safe等の既存Factory使用 |
+| **AA Wallet実装** | ❌ 不要 | Safe Account使用 |
+| **Paymaster** | ❌ 不要 | Pimlico Paymaster使用 |
+| **EntryPoint** | ❌ 不要 | ERC-4337標準を使用 |
+| **Content Registry** | ⚠️ 検討 | オンチェーン決済記録が必要な場合 |
+| **Payment Token** | ❌ 不要 | ETH決済で十分 |
+
+### アプローチ：既存インフラを最大活用
+
+```mermaid
+flowchart TD
+    subgraph "既存コントラクト利用"
+        A[Safe Account Factory<br/>0x4e15...] 
+        B[Safe Account実装<br/>監査済み]
+        C[Pimlico Paymaster<br/>ガス代スポンサー]
+        D[EntryPoint<br/>0x5FF1...]
+    end
+    
+    subgraph "自前実装"
+        E[なし]
+    end
+    
+    subgraph "アプリケーション"
+        F[Next.js Backend]
+        G[Firestore]
+    end
+    
+    F --> A
+    F --> C
+    F --> D
+    F --> G
+```
+
+### メリット・デメリット
+
+#### 既存コントラクト利用のメリット
+1. **開発コスト削減** - 実装・テスト・監査不要
+2. **セキュリティ** - 実績のある監査済みコード
+3. **メンテナンス不要** - アップデートは提供側
+4. **即座に利用可能** - デプロイ不要
+
+#### デメリット
+1. **カスタマイズ制限** - 独自機能追加困難
+2. **外部依存** - 仕様変更の影響
+3. **手数料** - Paymasterの利用料
+
+### 将来的な拡張時の検討
+
+```typescript
+// もしコンテンツ管理をオンチェーンにする場合
+contract MinimalContentRegistry {
+    mapping(bytes32 => uint256) public contentPrices;
+    mapping(bytes32 => mapping(address => bool)) public hasAccess;
+    
+    function purchaseContent(bytes32 contentId) external payable {
+        require(msg.value >= contentPrices[contentId], "Insufficient payment");
+        hasAccess[contentId][msg.sender] = true;
+    }
+}
+```
+
+### 推奨アプローチ
+
+1. **Phase 1（現在）**: コントラクト開発なし
+   - 既存インフラのみで実装
+   - Firestore でアクセス管理
+   - 決済履歴もオフチェーン
+
+2. **Phase 2（将来）**: 必要に応じて追加
+   - オンチェーン決済証明が必要な場合
+   - 分散型を強調したい場合
+   - トークンゲートが必要な場合
+
+## API設計
+
+### 402 Payment Required レスポンス仕様
+
+```typescript
+// GET /api/content/{contentId}
+// 未購入時のレスポンス
+{
+  status: 402,
+  headers: {
+    'X-Payment-Required': 'true',
+    'X-Payment-Amount': '0.001',  // ETH
+    'X-Payment-Currency': 'ETH',
+    'X-Payment-Network': 'base-sepolia',
+    'X-Content-Id': 'content123'
+  },
+  body: {
+    preview: "これはコンテンツのプレビューです...",
+    price: 1000000000000000,  // Wei
+    contentId: "content123"
+  }
+}
+
+// 購入済みの場合
+{
+  status: 200,
+  body: {
+    content: "これは有料コンテンツの本文です...",
+    contentId: "content123"
+  }
+}
+```
+
+### 主要エンドポイント
+
+| エンドポイント | メソッド | 用途 | 認証 |
+|---|---|---|---|
+| `/api/content` | GET | コンテンツ一覧取得 | 不要 |
+| `/api/content/{id}` | GET | コンテンツ取得（402対応） | セッション |
+| `/api/content` | POST | コンテンツ作成 | セッション |
+| `/api/payment/process` | POST | 支払い処理開始 | セッション |
+| `/api/user/wallet` | GET | AAウォレット情報取得 | セッション |
+
+## ユーザー識別とセッション管理
+
+### セッションベースの識別
+
+```mermaid
+flowchart LR
+    A[ブラウザアクセス] --> B{セッションCookie}
+    B -->|なし| C[新規セッション生成]
+    B -->|あり| D[既存セッション読込]
+    
+    C --> E[ユーザーID生成]
+    E --> F[AAウォレット生成]
+    F --> G[Firestore保存]
+    
+    D --> H[Firestore読込]
+    H --> I[AAウォレット復元]
+    
+    G --> J[セッション確立]
+    I --> J
+```
+
+### データフロー
+
+```typescript
+// 1. 初回アクセス時
+const session = {
+  sessionId: generateId(),
+  userId: generateId(),
+  createdAt: new Date()
+};
+
+// 2. AAウォレット生成（バックグラウンド）
+const wallet = await createAAWallet(session.userId);
+
+// 3. Firestore保存
+await db.collection('users').doc(session.userId).set({
+  aaWalletAddress: wallet.address
+});
+
+// 4. コンテンツアクセス時
+const hasAccess = await db
+  .collection('contents')
+  .doc(contentId)
+  .collection('accessList')
+  .doc(userId)
+  .get();
+
+if (!hasAccess.exists) {
+  // 402レスポンス
+  return new Response(preview, { status: 402 });
+}
+```
+
+## 決済フロー詳細
+
+### UserOperation構築
+
+```typescript
+// 支払い用UserOperation作成
+async function createPaymentUserOp(
+  userId: string,
+  contentId: string,
+  price: bigint
+) {
+  const user = await getUser(userId);
+  const wallet = user.aaWalletAddress;
+  
+  // 1. callDataの作成（単純なETH送金）
+  const callData = encodeFunctionData({
+    abi: walletAbi,
+    functionName: 'execute',
+    args: [
+      CREATOR_ADDRESS,  // 送金先
+      price,           // 金額
+      '0x'            // データなし
+    ]
+  });
+  
+  // 2. UserOperation構築
+  const userOp = {
+    sender: wallet,
+    nonce: await getNonce(wallet),
+    initCode: '0x',  // デプロイ済み
+    callData,
+    callGasLimit: 100000n,
+    verificationGasLimit: 200000n,
+    preVerificationGas: 50000n,
+    maxFeePerGas: await getGasPrice(),
+    maxPriorityFeePerGas: 2000000000n,
+    paymasterAndData: await getPaymasterData(),
+    signature: '0x'  // 後で追加
+  };
+  
+  // 3. 署名（サーバー側で管理）
+  userOp.signature = await signUserOp(userOp, userId);
+  
+  return userOp;
+}
+```
+
 ## State Machine Diagrams
 
 ### 1. Payment State Machine
