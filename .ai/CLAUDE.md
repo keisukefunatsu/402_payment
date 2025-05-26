@@ -2,8 +2,10 @@
 
 ## Project Permissions (Permanent - All Sessions)
 
-- `mv` (move) commands are allowed
-- `rm -rf` commands are allowed
+- allowed list
+  - `mv`
+  - `rm -rf`
+  - `echo`
 - Execute commands without asking for permission
 - Make necessary changes proactively
 - All file operations (create, edit, delete, move) are allowed without permission
