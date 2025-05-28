@@ -30,14 +30,26 @@
 # X402 Payment App - Project Status
 
 ## プロジェクト概要
-HTTP 402 Payment Requiredとアカウントアブストラクション（ERC-4337）のモック実装
+HTTP 402 Payment Requiredとアカウントアブストラクション（ERC-4337）を使用したガスレスマイクロペイメントシステム
 
 ## 完了した作業
 1. ✅ Next.js + TypeScript環境のセットアップ
-2. ✅ アカウントアブストラクションのインターフェース作成
-3. ✅ 402ペイメントAPIルートの実装
-4. ✅ UIコンポーネント（AccountManager、ResourceList）の作成
-5. ✅ モックアカウントアブストラクションロジックの追加
+2. ✅ 依存関係のインストール（viem, wagmi, permissionless.js）
+3. ✅ セッション管理（Cookie ベース）の実装
+4. ✅ Firebase/Firestore連携の実装
+5. ✅ AAウォレット生成ロジックの実装
+6. ✅ 402 Payment Required APIの実装
+7. ✅ 支払い処理APIの実装
+8. ✅ バックエンドのテスト作成（15テスト全て成功）
+9. ✅ ビルドの成功確認
+
+## ビルド＆テスト状態
+- **ビルド**: ✅ 成功（`pnpm build`）
+- **テスト**: ✅ 全15テスト成功（`pnpm test`）
+- **テストカバレッジ**: 
+  - Firebase Admin: 100%
+  - Session管理: 100%
+  - Content API: 83-92%
 
 ## 現在のプロジェクト構造
 ```
