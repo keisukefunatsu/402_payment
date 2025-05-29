@@ -19,6 +19,83 @@
         "git push --force",
         "npm publish",
         "yarn publish"
+      ],
+      "allowedCommands": [
+        "ls",
+        "ll", 
+        "la",
+        "cat",
+        "head",
+        "tail",
+        "less",
+        "more",
+        "find",
+        "grep",
+        "rg",
+        "wc",
+        "sort",
+        "uniq",
+        "sed",
+        "awk",
+        "diff",
+        "file",
+        "du",
+        "df",
+        "pwd",
+        "cd",
+        "which",
+        "whereis",
+        "npm",
+        "npx",
+        "yarn",
+        "pnpm",
+        "node",
+        "npm install",
+        "npm run",
+        "npm start",
+        "npm test",
+        "npm build",
+        "pnpm install",
+        "pnpm dev",
+        "pnpm build",
+        "pnpm test",
+        "pnpm lint",
+        "pnpm typecheck",
+        "yarn install",
+        "yarn dev",
+        "yarn build",
+        "yarn test",
+        "next dev",
+        "next build",
+        "next start",
+        "firebase",
+        "firebase emulators:start",
+        "firebase deploy --only hosting",
+        "firebase login --reauth",
+        "ps",
+        "top",
+        "htop",
+        "whoami",
+        "uname",
+        "date",
+        "echo",
+        "git status",
+        "git log",
+        "git diff",
+        "git branch",
+        "git show",
+        "git blame",
+        "curl",
+        "ping",
+        "netstat",
+        "lsof",
+        "kill",
+        "chmod +x",
+        "touch",
+        "mkdir",
+        "jq",
+        "jest",
+        "npm run test"
       ]
     },
     "externalServices": {
@@ -30,5 +107,37 @@
     "askPermission": false,
     "alwaysCreateFilesWithoutAsking": true,
     "neverAskForPermission": true
+  },
+  "project": {
+    "name": "402 Payment Microblog",
+    "description": "Gasless micropayment system using HTTP 402 Payment Required and Account Abstraction (ERC-4337)",
+    "structure": {
+      "root": "/Users/pyon/Projects/personal/402_payment",
+      "application": "/Users/pyon/Projects/personal/402_payment/application",
+      "web3": "/Users/pyon/Projects/personal/402_payment/web3"
+    }
+  },
+  "development": {
+    "commands": {
+      "dev": "pnpm dev",
+      "build": "pnpm build",
+      "start": "pnpm start",
+      "lint": "pnpm lint",
+      "test": "pnpm test",
+      "typecheck": "pnpm typecheck"
+    },
+    "environment": {
+      "required": [
+        "PIMLICO_API_KEY",
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_CLIENT_EMAIL",
+        "FIREBASE_PRIVATE_KEY",
+        "SESSION_SECRET"
+      ],
+      "optional": [
+        "NEXT_PUBLIC_RPC_URL",
+        "NEXT_PUBLIC_APP_URL"
+      ]
+    }
   }
 }

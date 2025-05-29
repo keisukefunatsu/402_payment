@@ -6,6 +6,14 @@
   - `mv`
   - `rm -rf`
   - `echo`
+  - `curl`
+  - `git` (except `git push`)
+  - `cd`
+  - `ls`
+  - `cat`
+  - `pnpm`
+  - `npm`
+  - `yarn`
 - Execute commands without asking for permission
 - Make necessary changes proactively
 - All file operations (create, edit, delete, move) are allowed without permission

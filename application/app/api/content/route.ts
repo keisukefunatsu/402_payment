@@ -6,6 +6,10 @@ import { parseEther } from 'viem';
 // GET /api/content - List all contents
 export async function GET(request: NextRequest) {
   try {
+    if (!db.collection) {
+      return NextResponse.json({ contents: [] });
+    }
+    
     const contentsSnapshot = await db.collection(collections.contents).get();
     
     const contents = contentsSnapshot.docs.map(doc => ({
@@ -38,6 +42,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      );
+    }
+
+    if (!db.collection) {
+      return NextResponse.json(
+        { error: 'Database not available' },
+        { status: 503 }
       );
     }
 

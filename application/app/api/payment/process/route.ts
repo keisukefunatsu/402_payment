@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createUserSession } from '@/lib/session';
 import { getUser, grantContentAccess, db, collections } from '@/lib/firebase-admin';
 import { createAAClient } from '@/lib/aa-wallet';
-import { parseEther } from 'viem';
 
 // This is a mock creator address - in production, get from content creator
-const CREATOR_ADDRESS = '0x742d35Cc6634C0532925a3b844Bc9e7595f2bD7E' as const;
+const CREATOR_ADDRESS = '0x742D35cC6634C0532925a3b844Bc9e7595f2Bd7e' as const;
 
 export async function POST(request: NextRequest) {
   try {

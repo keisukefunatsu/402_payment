@@ -8,7 +8,9 @@ export interface SessionData {
 }
 
 export const sessionOptions: SessionOptions = {
-  password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
+  password: process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 32 
+    ? process.env.SESSION_SECRET 
+    : 'complex_password_at_least_32_characters_long_change_this_in_production',
   cookieName: '402-payment-session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
