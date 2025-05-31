@@ -1,0 +1,5 @@
+fix: resolve build errors and add commit rules
+
+- Fix EntryPoint address import issue
+- Remove unused variable warnings
+- Add commit rules to .claude/settings.json (no co-author, always build/test/lint)

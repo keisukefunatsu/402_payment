@@ -106,7 +106,16 @@
     "proactive": true,
     "askPermission": false,
     "alwaysCreateFilesWithoutAsking": true,
-    "neverAskForPermission": true
+    "neverAskForPermission": true,
+    "gitCommit": {
+      "noCoAuthor": true,
+      "noClaudeSignature": true
+    },
+    "beforeCommit": {
+      "alwaysRunBuild": true,
+      "alwaysRunTests": true,
+      "alwaysRunLint": true
+    }
   },
   "project": {
     "name": "402 Payment Microblog",

@@ -1,4 +1,4 @@
-import { createPublicClient, http, createWalletClient, Hex } from 'viem';
+import { createPublicClient, http } from 'viem';
 import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
 import { baseSepolia } from 'viem/chains';
 import { 
@@ -6,11 +6,10 @@ import {
 } from 'permissionless';
 import { toSafeSmartAccount } from 'permissionless/accounts';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
-import { ENTRYPOINT_ADDRESS_V07 } from 'permissionless';
 
 // Constants
 const PIMLICO_API_KEY = process.env.PIMLICO_API_KEY!;
-const ENTRYPOINT_ADDRESS = ENTRYPOINT_ADDRESS_V07;
+const ENTRYPOINT_ADDRESS = '0x0000000071727De22E5E9d8BAf0edAc6f37da032' as const; // EntryPoint v0.7
 
 // Create clients
 const publicClient = createPublicClient({
@@ -27,18 +26,11 @@ const pimlicoClient = createPimlicoClient({
 });
 
 // Generate AA wallet for a user
-export async function generateAAWallet(userId: string) {
+export async function generateAAWallet(_userId: string) {
   // Generate a deterministic private key for the user
   // In production, use a secure key derivation method
   const privateKey = generatePrivateKey();
   const signer = privateKeyToAccount(privateKey);
-  
-  // Create wallet client
-  const walletClient = createWalletClient({
-    account: signer,
-    chain: baseSepolia,
-    transport: http(process.env.NEXT_PUBLIC_RPC_URL),
-  });
   
   // Create Safe smart account
   const safeAccount = await toSafeSmartAccount({
