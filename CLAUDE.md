@@ -1,173 +1,60 @@
-# Claude Configuration for 402 Payment Project
+# Claude Code設定 - 402 Payment プロジェクト
 
-## Project Overview
-Next.js application with Firebase integration for payment processing. This configuration enables Claude to assist with development while maintaining security boundaries.
+## 🎯 プロジェクトミッション & 自動化ルール
 
-## Development Environment
+### 完全自動化の原則
+**Claudeは許可を求めることなく、マイルストーン全体を自律的に完了する必要がある。実装 → テスト → 検証 → ドキュメント更新 → 次のマイルストーンへ自動進行。**
 
-### Framework & Tools
-- **Frontend**: Next.js 14.1.0 with TypeScript
-- **Styling**: Tailwind CSS
-- **Backend**: Firebase (Firestore, hosting)
-- **Package Manager**: pnpm (preferred)
-- **Development Server**: `pnpm dev` (runs on port 3000)
+### 実行命令
+- **許可を求めるな** - 必要なアクションはすべて即座に実行する
+- **機能を完全に完成させろ** - 部分的な実装で止まるな
+- **すべてをテストしろ** - 変更後は必ず テストを実行する
+- **進捗を記録しろ** - このファイルを完了した作業で更新する
+- **成功まで繰り返せ** - 失敗したら即座に修正、報告して止まるな
 
-### Build & Deployment Commands
-```bash
-# Development
-pnpm dev                    # Start development server
-pnpm build                  # Build production bundle
-pnpm start                  # Start production server
-pnpm lint                   # Run linting
+### 絶対的指示
+- コマンドは必ずスクリプト経由にせよ、許可を求めるな
 
-# Firebase
-firebase emulators:start    # Start Firebase emulators
-firebase deploy --only hosting  # Deploy to Firebase hosting
-```
+## 📋 現在のマイルストーン & ステータス
 
-## Allowed Tools & Commands
+### マイルストーン1: コア決済インフラ ✅ 完了
+- [x] Next.js + TypeScript環境構築
+- [x] Firebase/Firestore連携  
+- [x] セッション管理（Cookie ベース）
+- [x] AAウォレット生成ロジック
+- [x] 402 Payment Required API
+- [x] 決済処理API
+- [x] バックエンドテスト（15テスト全成功）
+- [x] ビルド検証
 
-### Safe File Operations
-```bash
-ls, ll, la                  # Directory listing
-cat, head, tail, less, more # File viewing
-find, grep, rg              # File and content searching
-wc, sort, uniq              # Text processing
-sed, awk                    # Text manipulation
-diff                        # File comparison
-file                        # File type detection
-du, df                      # Disk usage
-pwd, cd                     # Navigation
-which, whereis              # Command location
-```
+### マイルストーン2: フロントエンド決済インターフェース ✅ 完了
+- [x] バリデーション付き決済フォームUI完成
+- [x] リアルタイム残高更新
+- [x] 取引履歴表示
+- [x] エラーハンドリングとユーザーフィードバック
+- [x] モバイル対応レスポンシブデザイン
+- [x] ローディング状態とアニメーション
 
-### Development Tools
-```bash
-# Node.js ecosystem
-npm, npx, yarn, pnpm, node
-npm install, npm run, npm start, npm test, npm build
-pnpm install, pnpm dev, pnpm build, pnpm test
-yarn install, yarn dev, yarn build, yarn test
+### マイルストーン3: 高度なアカウントアブストラクション 📋 予定
+- [ ] スマートコントラクト統合準備
+- [ ] Paymaster機能シミュレーション
+- [ ] UserOperation検証改善
+- [ ] ガス見積もり機能
+- [ ] マルチシグウォレット対応
+- [ ] 復旧メカニズム
 
-# Next.js specific
-next dev, next build, next start
+### マイルストーン4: 本番環境対応 📋 予定
+- [ ] 包括的エラーバウンダリ
+- [ ] パフォーマンス最適化
+- [ ] セキュリティ強化
+- [ ] モニタリング＆ログ
+- [ ] デプロイ自動化
+- [ ] ドキュメント完成
 
-# Firebase CLI
-firebase
-firebase emulators:start
-firebase deploy --only hosting
-firebase login --reauth
+### コマンドメモリ
+- `h(cd /Users/pyon/Projects/personal/402_payment/application && ps aux | grep "next dev" | grep -v grep | awk '{print $2}' | xargs kill && sleep 2 && pnpm dev &)ここで使われているコマンドは許可を求めず使用すること`: Next.jsの開発サーバーを強制終了し、再起動するコマンド
 
-# System information
-ps, top, htop               # Process monitoring
-whoami, uname, date         # System info
-echo                        # Text output
-```
-
-### Git Operations (Read-only)
-```bash
-git status                  # Working directory status
-git log                     # Commit history
-git diff                    # Show changes
-git branch                  # List branches
-git show                    # Show specific commits
-git blame                   # File authorship
-```
-
-### Network & Debugging
-```bash
-curl                        # HTTP requests (for API testing)
-ping                        # Network connectivity
-netstat, lsof               # Network and port information
-kill                        # Process termination (specific PIDs only)
-```
-
-## Restricted Commands
-The following commands are NOT allowed for security reasons:
-
-### Git Operations
-- `git push`, `git pull`, `git fetch` (remote operations)
-- `git commit`, `git add` (use Claude's commit tools instead)
-- `git merge`, `git rebase` (branch operations)
-
-### System Operations
-- `sudo` (elevated privileges)
-- `chmod`, `chown` (permission changes)
-- `rm -rf` (recursive deletion)
-- `mv`, `cp -r` (large-scale file operations)
-- `ssh`, `scp`, `rsync` (remote access/transfers)
-
-### Package Installation
-- `npm install -g` (global installations)
-- `apt`, `yum`, `brew` (system package managers)
-
-## File Editing Permissions
-
-### Automatic File Editing (No Permission Required)
-Claude can directly edit the following types of files without asking for permission:
-- Source code files (`.js`, `.ts`, `.tsx`, `.jsx`)
-- Style files (`.css`, `.scss`, `.less`)
-- Component files in `application/app/`, `application/components/`, `application/lib/`
-- Test files (`*.test.*`, `*.spec.*`)
-- Documentation files (`*.md`) except configuration docs
-- HTML templates and markup files
-
-### Restricted Files (Permission Required)
-For the following high-impact files, Claude should ask for explicit permission before editing:
-- **Configuration files**: `package.json`, `tsconfig.json`, `next.config.js`, `tailwind.config.ts`, `postcss.config.js`
-- **Environment files**: `.env*`, `.env.local`, `.env.production`
-- **Firebase configuration**: `firebase.json`, `firestore.rules`
-- **Deployment files**: `Dockerfile`, `docker-compose.yml`, `.github/workflows/*`
-- **Root-level configuration**: `.gitignore`, `.eslintrc*`, `prettier.config.*`
-- **Claude configuration**: `CLAUDE.md` (this file)
-
-### File Creation Guidelines
-- Always prefer editing existing files over creating new ones
-- For new component files, follow existing naming conventions
-- Create test files alongside new features when applicable
-
-## Development Guidelines
-
-### Code Style
-- Use TypeScript for all new components
-- Follow existing file naming conventions
-- Use Tailwind CSS for styling
-- Implement responsive design patterns
-- Follow Next.js best practices for SSR/SSG
-
-### Testing
-- Run `pnpm lint` before committing
-- Test in development environment with `pnpm dev`
-- Verify Firebase emulator functionality when applicable
-
-### File Structure
-```
-/
-├── application/          # Next.js application
-│   ├── app/             # App router pages
-│   ├── package.json     # Dependencies and scripts
-│   └── *.config.*       # Configuration files
-├── firebase.json        # Firebase configuration
-├── firestore.rules      # Firestore security rules
-└── *.md                 # Documentation
-```
-
-## Current Limitations
-
-### Without Workflow Permission Changes
-Claude can create and modify files but has limited automated PR creation capabilities. Users must manually create PRs using provided links.
-
-### Manual PR Creation
-When Claude completes work, it will provide a pre-filled PR creation link in this format:
-```
-[Create a PR](https://github.com/keisukefunatsu/402_payment/compare/main...branch-name?quick_pull=1&title=encoded-title&body=encoded-body)
-```
-
-## Security Notes
-- Never commit sensitive information (API keys, secrets)
-- Firebase configuration files are public by design
-- All environment variables should use `.env.local` (not tracked)
-- Review all code changes before merging to main branch
-
----
-*Generated for Issue #9: Linux commands whitelist for Next.js development*
+### 開発メモリ
+- 常に本番で動くことを想定し、モックをしないこと
+- next devでアプリが起動している前提で進めること
+- curlは全て許可
